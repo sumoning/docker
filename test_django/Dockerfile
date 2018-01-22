@@ -5,6 +5,9 @@ ENV PYTHONUNBUFFERED 1
 
 RUN mkdir /code
 WORKDIR /code
-ADD requirments.txt /code/
-RUN  pip install -r requirments.txt -i http://mirrors.aliyun.com/help/pypi
+COPY requirments.txt /code/
+COPY repositories /etc/apk/
+RUN  apk update \
+  && apk add musl-dev python-dev postgresql-dev \
+  && pip install -r requirments.txt -i http://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com
 ADD . /code/
