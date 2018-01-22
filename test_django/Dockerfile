@@ -8,6 +8,6 @@ WORKDIR /code
 COPY requirments.txt /code/
 COPY repositories /etc/apk/
 RUN  apk update \
-  && apk add musl-dev python-dev postgresql-dev \
+  && apk add musl-dev gcc python-dev postgresql-dev \
   && pip install -r requirments.txt -i http://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com
 ADD . /code/
