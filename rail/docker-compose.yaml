@@ -8,7 +8,7 @@ services:
     build: .
     command: bundle exec rackup -p 5000
     volumes:
-      - ./test:/mydir
+      - ".:/mydir"
     ports:
       - "80:5000"
     links:
