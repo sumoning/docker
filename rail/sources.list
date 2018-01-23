@@ -1,0 +1,7 @@
+# deb http://deb.debian.org/debian stretch main
+# deb http://deb.debian.org/debian stretch-updates main
+# deb http://security.debian.org stretch/updates main
+
+deb http://mirrors.aliyun.com/debian stretch main contrib non-free
+deb http://mirrors.aliyun.com/debian stretch-updates main contrib non-free
+deb http://mirrors.aliyun.com/debian-security stretch/updates main contrib non-free
