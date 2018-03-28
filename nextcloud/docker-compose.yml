@@ -1,0 +1,65 @@
+version: '3'  
+services:  
+    mariadb:  
+        image: mariadb
+        hostname: mariadb  
+        container_name: mariadb
+        volumes:  
+            - ./nextcloud/mysql:/var/lib/mysql 
+            - ./conf.d/transaction-isolation.conf:/etc/mysql/conf.d/transaction-isolation.conf:ro
+        restart: always  
+        environment:  
+            - MYSQL_ROOT_PASSWORD= root
+            - TZ=Asia/Shanghai
+        env_file:
+            - ./conf.d/db.env
+        networks:
+            - nextcloud
+        logging:
+            driver: json-file
+            options:
+                max-file: '3'
+                max-size: 100m
+    
+    nextcloud:
+        image: nextcloud:fpm
+        hostname: nextcloud
+        container_name: nextcloud
+        environment:
+            - TZ= Asia/Shanghai
+        env_file:
+            - ./conf.d/db.env
+        depends_on:
+            - mariadb
+        volumes:
+            - ./nextcloud/nextcloud:/var/www/html
+        restart: always
+        networks:
+            - nextcloud
+    nginx:
+        image: nginx
+        container_name: nginx  
+        hostname: nginx
+        volumes:  
+            - ./conf.d/nginx.conf:/etc/nginx/nginx.conf:ro
+            - ./conf.d/1_pan.sumoning.cn_bundle.crt:/etc/ssl/1_pan.sumoning.cn_bundle.crt:ro
+            - ./conf.d/2_pan.sumoning.cn.key:/etc/ssl/2_pan.sumoning.cn.key:ro
+            - ./nextcloud/nextcloud:/var/www/html
+        ports:
+            - 443:443
+            - 80:80
+        networks:
+            - nextcloud
+        depends_on:
+            - nextcloud
+        environment:
+            - TZ=Asia/Shanghai
+        logging:
+            driver: json-file
+            options:
+                max-file: '3'
+                max-size: 100m
+        restart: always
+
+networks:
+    nextcloud:

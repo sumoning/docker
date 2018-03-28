@@ -1,0 +1,95 @@
+version: '3'  
+services:  
+    mariadb:  
+        image: mariadb
+        hostname: mariadb  
+        container_name: mariadb
+        volumes:  
+            - ./mysql:/var/lib/mysql 
+            - ./conf.d/transaction-isolation.conf:/etc/mysql/conf.d/transaction-isolation.conf:ro
+        restart: always  
+        environment:  
+            - MYSQL_ROOT_PASSWORD= root
+        env_file:
+            - ./conf.d/db.env
+        networks:
+            - default
+        logging:
+            driver: json-file
+            options:
+                max-file: '3'
+                max-size: 100m
+    
+    nextcloud:
+        image: nextcloud:fpm
+        hostname: nextcloud
+        container_name: nextcloud
+        depends_on:
+            - mariadb
+        volumes:
+            - ./nextcloud:/var/www/html
+            - /mnt:/var/www/html/data
+        restart: always
+        networks:
+            - default
+    
+    nginx:
+        image: nginx:1.13.6-alpine
+        container_name: nginx  
+        hostname: nginx
+        volumes:  
+            - ./conf.d/nginx.conf:/etc/nginx/nginx.conf:ro
+            - ./nextcloud:/var/www/html
+            - /mnt:/var/www/html/data
+        environment:
+            - VIRTUAL_HOST=pan.sumoning.cn
+            - LETSENCRYPT_HOST=pan.sumoning.cn
+            - LETSENCRYPT_EMAIL=18730231069@163.com
+        networks:
+            - default
+        depends_on:
+            - nextcloud
+        logging:
+            driver: json-file
+            options:
+                max-file: '3'
+                max-size: 100m
+        restart: always
+
+    proxy:
+        image: jwilder/nginx-proxy:alpine
+        restart: always
+        container_name: nginx-proxy
+        hostname: nginx-proxy
+        ports:
+            - 80:80
+            - 443:443
+        labels:
+            com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
+        volumes:
+            - ./conf.d/uploadsize.conf:/etc/nginx/conf.d/uploadsize.conf:ro
+            - certs:/etc/nginx/certs:ro
+            - vhost.d:/etc/nginx/vhost.d
+            - html:/usr/share/nginx/html
+            - /var/run/docker.sock:/tmp/docker.sock:ro
+        networks:
+            - default
+
+    letsencrypt-companion:
+        image: jrcs/letsencrypt-nginx-proxy-companion
+        restart: always
+        container_name: letsencrypt
+        hostname: letsencrypt
+        volumes:
+            - certs:/etc/nginx/certs
+            - vhost.d:/etc/nginx/vhost.d
+            - html:/usr/share/nginx/html
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+        networks:
+            - default
+        depends_on:
+            - proxy
+volumes:
+    certs:
+    vhost.d:
+    html: 
