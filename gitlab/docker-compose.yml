@@ -1,0 +1,31 @@
+version: '3'
+services:
+    gitlab:
+        image: gitlab/gitlab-ce
+        hostname: gitlab
+        ports:
+            - "3001:80"
+            - "3002:443"
+            - "3003:22"
+        environment:
+            TZ: 'Asia/Shanghai'
+            GITLAB_OMNIBUS_CONFIG: |
+                external_url 'http://10.2.49.36/'
+                gitlab_rails['time_zone'] = 'Asia/Shanghai'
+                gitlab_rails['smtp_enable'] = false
+        volumes:
+            - ./gitlab/etc:/etc/gitlab
+            - ./gitlab/opt:/var/opt/gitlab
+            - ./gitlab/log:/var/log/gitlab
+        #deploy:
+        #    mode: replicated
+        #    replicas: 1
+            #iplacement:
+            #    constraints:
+            #        - node.labels.gitlab == true
+        networks:
+            gitlab:
+                aliases:
+                    - gitlab
+networks:
+    gitlab:
